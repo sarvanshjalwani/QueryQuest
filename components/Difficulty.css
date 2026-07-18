@@ -1,0 +1,508 @@
+@import url('https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&display=swap');
+
+.difficulty-wrapper {
+    min-height: 100vh;
+    width: 100%;
+    background: #0c0b09;
+    font-family: 'Courier Prime', 'Courier New', monospace;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2.5rem 2rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.difficulty-wrapper::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: repeating-linear-gradient(to bottom,
+            transparent 0px,
+            transparent 3px,
+            rgba(0, 0, 0, 0.07) 3px,
+            rgba(0, 0, 0, 0.07) 4px);
+    pointer-events: none;
+    z-index: 0;
+}
+
+.difficulty-wrapper::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: radial-gradient(ellipse 85% 85% at 50% 40%, transparent 35%, rgba(0, 0, 0, 0.65) 100%);
+    pointer-events: none;
+    z-index: 0;
+}
+
+/* ── Header ── */
+
+.diff-header {
+    position: relative;
+    z-index: 1;
+    text-align: center;
+    margin-bottom: 2.5rem;
+}
+
+.diff-eyebrow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    margin-bottom: 0.8rem;
+}
+
+.diff-eyebrow-line {
+    width: 32px;
+    height: 1px;
+    background: #8b6914;
+}
+
+.diff-eyebrow-text {
+    font-size: 0.62rem;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    color: #8b6914;
+}
+
+.diff-title {
+    font-size: clamp(1.3rem, 3vw, 1.8rem);
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: #e8e0d0;
+    margin-bottom: 0.4rem;
+}
+
+.diff-subtitle {
+    font-size: 0.65rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: #5a5248;
+}
+
+/* ── Grid ── */
+
+.diff-grid {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    width: 100%;
+    max-width: 860px;
+    align-items: stretch;
+}
+
+/* ── Card ── */
+
+.diff-card {
+    background: #121109;
+    border: 1px solid #2a2720;
+    padding: 1.8rem 1.4rem 1.6rem;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.22s ease, border-color 0.22s ease, background 0.22s ease;
+    outline: none;
+}
+
+.diff-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    transform: scaleX(0);
+    transform-origin: center;
+    transition: transform 0.28s ease;
+}
+
+.diff-card::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    transform: scaleX(0);
+    transform-origin: center;
+    transition: transform 0.28s ease;
+}
+
+.diff-card:hover {
+    transform: translateY(-4px);
+}
+
+.diff-card:hover::before,
+.diff-card:hover::after {
+    transform: scaleX(1);
+}
+
+.diff-card:focus-visible {
+    outline: 1px solid #c9a03d;
+    outline-offset: 3px;
+}
+
+.card-easy::before,
+.card-easy::after {
+    background: #c9a03d;
+}
+
+.card-easy:hover {
+    background: #140e03;
+    border-color: #5a4418;
+}
+
+.card-medium::before,
+.card-medium::after {
+    background: #c05a2a;
+}
+
+.card-medium:hover {
+    background: #140703;
+    border-color: #5a2410;
+}
+
+.card-hard::before,
+.card-hard::after {
+    background: #a03030;
+}
+
+.card-hard:hover {
+    background: #140303;
+    border-color: #5a1010;
+}
+
+/* ── Icon ── */
+
+.card-icon-wrap {
+    width: 52px;
+    height: 52px;
+    border: 1px solid;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1.2rem;
+    flex-shrink: 0;
+    transition: border-color 0.22s;
+}
+
+.card-easy .card-icon-wrap {
+    border-color: #3a3010;
+}
+
+.card-medium .card-icon-wrap {
+    border-color: #3a200a;
+}
+
+.card-hard .card-icon-wrap {
+    border-color: #3a0e0e;
+}
+
+.card-easy:hover .card-icon-wrap {
+    border-color: #c9a03d;
+}
+
+.card-medium:hover .card-icon-wrap {
+    border-color: #c05a2a;
+}
+
+.card-hard:hover .card-icon-wrap {
+    border-color: #a03030;
+}
+
+.card-icon-wrap svg {
+    width: 26px;
+    height: 26px;
+}
+
+/* ── Text ── */
+
+.card-difficulty-label {
+    font-size: 0.56rem;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    margin-bottom: 0.3rem;
+    transition: color 0.2s;
+}
+
+.card-easy .card-difficulty-label {
+    color: #8b6914;
+}
+
+.card-medium .card-difficulty-label {
+    color: #8b3a10;
+}
+
+.card-hard .card-difficulty-label {
+    color: #7a2020;
+}
+
+.card-easy:hover .card-difficulty-label {
+    color: #c9a03d;
+}
+
+.card-medium:hover .card-difficulty-label {
+    color: #c05a2a;
+}
+
+.card-hard:hover .card-difficulty-label {
+    color: #a03030;
+}
+
+.card-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: #e8e0d0;
+    margin-bottom: 0.3rem;
+    line-height: 1;
+}
+
+.card-tagline {
+    font-size: 0.62rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #4a4540;
+    margin-bottom: 1.4rem;
+    text-align: center;
+    line-height: 1.8;
+    white-space: pre-line;
+}
+
+/* ── Rule ── */
+
+.card-rule {
+    width: 100%;
+    height: 1px;
+    background: #1e1c18;
+    margin-bottom: 1.2rem;
+    flex-shrink: 0;
+}
+
+/* ── Stats ── */
+
+.card-stats {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 0.7rem;
+    margin-bottom: 1.4rem;
+}
+
+.stat-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.stat-label {
+    font-size: 0.6rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: #4a4540;
+}
+
+.stat-value {
+    font-size: 0.88rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    color: #c8c0b0;
+}
+
+/* ── Progress ── */
+
+.progress-block {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    margin-bottom: 1.4rem;
+}
+
+.progress-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.progress-label {
+    font-size: 0.58rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: #4a4540;
+}
+
+.progress-pct {
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+}
+
+.card-easy .progress-pct {
+    color: #c9a03d;
+}
+
+.card-medium .progress-pct {
+    color: #c05a2a;
+}
+
+.card-hard .progress-pct {
+    color: #a03030;
+}
+
+/* Progress component override */
+.progress-bar {
+    width: 100%;
+    height: 3px;
+    background: #1e1c18;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    transition: width 0.55s ease;
+}
+
+.card-easy .progress-fill {
+    background: #c9a03d;
+}
+
+.card-medium .progress-fill {
+    background: #c05a2a;
+}
+
+.card-hard .progress-fill {
+    background: #a03030;
+}
+
+/* ── Badges ── */
+
+.card-badges {
+    display: flex;
+    gap: 5px;
+    flex-wrap: wrap;
+    width: 100%;
+    margin-bottom: 1.4rem;
+}
+
+.diff-badge {
+    font-size: 0.52rem;
+    letter-spacing: 0.13em;
+    text-transform: uppercase;
+    padding: 0.18rem 0.5rem;
+    border: 1px solid;
+}
+
+.card-easy .diff-badge {
+    color: #8b6914;
+    border-color: #3a3010;
+}
+
+.card-medium .diff-badge {
+    color: #8b3a10;
+    border-color: #3a200a;
+}
+
+.card-hard .diff-badge {
+    color: #7a2020;
+    border-color: #3a0e0e;
+}
+
+/* ── CTA ── */
+
+.card-cta {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: auto;
+    font-size: 0.62rem;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    transition: gap 0.2s, color 0.2s;
+}
+
+.card-easy .card-cta {
+    color: #6a5010;
+}
+
+.card-medium .card-cta {
+    color: #6a2a0a;
+}
+
+.card-hard .card-cta {
+    color: #6a1010;
+}
+
+.card-easy:hover .card-cta {
+    color: #c9a03d;
+}
+
+.card-medium:hover .card-cta {
+    color: #c05a2a;
+}
+
+.card-hard:hover .card-cta {
+    color: #a03030;
+}
+
+.diff-card:hover .card-cta {
+    gap: 12px;
+}
+
+/* ── Footer ── */
+
+.diff-footer {
+    position: relative;
+    z-index: 1;
+    margin-top: 2rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.6rem;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: #a49f97;
+}
+
+.diff-footer-dot {
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: #c9a03d;
+    animation: blink 1.6s step-end infinite;
+}
+
+@keyframes blink {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.15;
+    }
+}
+
+/* ── Responsive ── */
+
+@media (max-width: 720px) {
+    .diff-grid {
+        grid-template-columns: 1fr;
+        max-width: 360px;
+        gap: 12px;
+    }
+
+    .diff-card {
+        padding: 1.6rem 1.2rem;
+    }
+}

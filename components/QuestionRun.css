@@ -1,0 +1,711 @@
+/* QuestionRun.css - Brighter Noir Theme (matches Landing.css) */
+@import url('https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400&display=swap');
+
+*,
+*::before,
+*::after {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    --gold: #d4af37;
+    --gold-dim: #b8960c;
+    --gold-pale: #f5e6b8;
+    --ink: #1a1814;
+    --ink-2: #24211c;
+    --ink-3: #2f2b24;
+    --parchment: #f5f0e6;
+    --mist: #b8b0a0;
+    --ash: #8a8278;
+    --ghost: #6a6258;
+    --border: #4a4438;
+    --border-warm: #6a5a30;
+    --ember: #d4572a;
+    --ember-dim: #a04020;
+    --moss: #4a9a5a;
+    --font: 'Courier Prime', 'Courier New', monospace;
+}
+
+/* ─── Wrapper ───────────────────────────────────── */
+
+.question-run {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #2a251c 0%, #1e1b16 50%, #2a251c 100%);
+    font-family: var(--font);
+    color: var(--parchment);
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    overflow-x: hidden;
+}
+
+/* CRT scanlines */
+.question-run::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: repeating-linear-gradient(
+        to bottom,
+        transparent 0px,
+        transparent 3px,
+        rgba(255, 255, 255, 0.03) 3px,
+        rgba(255, 255, 255, 0.03) 4px
+    );
+    pointer-events: none;
+    z-index: 100;
+}
+
+/* Vignette */
+.question-run::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: radial-gradient(ellipse 85% 85% at 50% 40%, transparent 40%, rgba(0, 0, 0, 0.4) 100%);
+    pointer-events: none;
+    z-index: 99;
+}
+
+/* ─── Top Bar ───────────────────────────────────── */
+
+.qr-topbar {
+    position: relative;
+    z-index: 200;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.9rem 2rem;
+    border-bottom: 1px solid var(--border);
+    background: rgba(30, 27, 22, 0.92);
+    backdrop-filter: blur(6px);
+    gap: 1.5rem;
+    flex-shrink: 0;
+}
+
+.qr-back-btn {
+    font-family: var(--font);
+    font-size: 0.65rem;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--ash);
+    background: transparent;
+    border: 1px solid var(--border);
+    padding: 0.35rem 0.85rem;
+    cursor: pointer;
+    transition: color 0.2s, border-color 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.qr-back-btn::before {
+    content: '←';
+    font-size: 0.8rem;
+}
+
+.qr-back-btn:hover {
+    color: var(--gold);
+    border-color: var(--gold-dim);
+}
+
+.qr-breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.62rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--ghost);
+    overflow: hidden;
+    flex: 1;
+}
+
+.qr-breadcrumb-sep {
+    color: var(--border);
+}
+
+.qr-breadcrumb-current {
+    color: var(--gold-dim);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.qr-difficulty-badge {
+    font-size: 0.6rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    padding: 0.2rem 0.65rem;
+    border: 1px solid;
+    flex-shrink: 0;
+}
+
+.badge-easy {
+    color: var(--moss);
+    border-color: var(--moss);
+}
+
+.badge-medium {
+    color: var(--gold-dim);
+    border-color: var(--gold-dim);
+}
+
+.badge-hard {
+    color: var(--ember-dim);
+    border-color: var(--ember-dim);
+}
+
+/* ─── Content Wrapper ───────────────────────────────── */
+
+.qr-content-wrapper {
+    position: relative;
+    z-index: 10;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    height: calc(100vh - 57px);
+    overflow: hidden;
+}
+
+/* ─── Top Section: Question + Editor in Flex Row ───────────────── */
+
+.qr-top-section {
+    display: flex;
+    flex-direction: row;
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+}
+
+/* ─── Left Panel (Problem) ──────────────────────── */
+
+.qr-panel-left {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    background: linear-gradient(135deg, #1e1b16 0%, #1a1814 100%);
+    border-right: 1px solid var(--border);
+}
+
+.qr-panel-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0.7rem 1.5rem;
+    border-bottom: 1px solid var(--border);
+    background: var(--ink-2);
+    flex-shrink: 0;
+}
+
+.qr-panel-tab {
+    font-size: 0.62rem;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--gold);
+    border-bottom: 1px solid var(--gold-dim);
+    padding-bottom: 2px;
+}
+
+.qr-panel-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 2rem 1.8rem;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) transparent;
+}
+
+.qr-panel-body::-webkit-scrollbar {
+    width: 4px;
+}
+
+.qr-panel-body::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.qr-panel-body::-webkit-scrollbar-thumb {
+    background: var(--border);
+    border-radius: 2px;
+}
+
+.qr-problem-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--parchment);
+    margin-bottom: 0.5rem;
+    line-height: 1.4;
+}
+
+.qr-divider {
+    width: 60px;
+    height: 1px;
+    background: linear-gradient(90deg, var(--gold-dim), transparent);
+    margin: 1.2rem 0;
+}
+
+.qr-problem-body {
+    font-size: 0.78rem;
+    letter-spacing: 0.06em;
+    color: var(--mist);
+    line-height: 2;
+    margin-bottom: 2rem;
+}
+
+.qr-testcase-label {
+    font-size: 0.6rem;
+    letter-spacing: 0.26em;
+    text-transform: uppercase;
+    color: var(--gold-dim);
+    margin-bottom: 0.7rem;
+}
+
+.qr-testcase-block {
+    background: var(--ink);
+    border: 1px solid var(--border);
+    border-left: 2px solid var(--gold-dim);
+    padding: 1rem 1.2rem;
+    font-size: 0.72rem;
+    letter-spacing: 0.06em;
+    color: var(--mist);
+    line-height: 1.9;
+    font-family: var(--font);
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+/* ─── Right Panel (Editor) ──────────────────────── */
+
+.qr-panel-right {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    background: var(--ink);
+}
+
+.qr-editor-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.7rem 1.5rem;
+    border-bottom: 1px solid var(--border);
+    background: var(--ink-2);
+    flex-shrink: 0;
+    gap: 1rem;
+    width: 100%;
+}
+
+.qr-editor-lang {
+    font-size: 0.6rem;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--moss);
+    border: 1px solid var(--moss);
+    padding: 0.2rem 0.6rem;
+}
+
+.qr-editor-hint {
+    font-size: 0.6rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--ghost);
+}
+
+/* ─── Editor Area ───────────────────────────────── */
+
+.qr-editor-area {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 1.2rem 1.5rem;
+    overflow: hidden;
+    min-height: 0;
+}
+
+.qr-editor-gutter {
+    display: flex;
+    gap: 1rem;
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+}
+
+.qr-line-numbers {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    padding-top: 2px;
+    user-select: none;
+    color: var(--ghost);
+    font-size: 0.68rem;
+    letter-spacing: 0.04em;
+    line-height: 1.72rem;
+    min-width: 32px;
+    flex-shrink: 0;
+    overflow: hidden;
+}
+
+.qr-sql-input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    outline: none;
+    resize: none;
+    font-family: var(--font);
+    font-size: 0.82rem;
+    letter-spacing: 0.04em;
+    color: var(--parchment);
+    line-height: 1.72rem;
+    caret-color: var(--gold);
+    width: 100%;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) transparent;
+}
+
+.qr-sql-input::-webkit-scrollbar {
+    width: 4px;
+}
+
+.qr-sql-input::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.qr-sql-input::-webkit-scrollbar-thumb {
+    background: var(--border);
+    border-radius: 2px;
+}
+
+.qr-sql-input::placeholder {
+    color: var(--ghost);
+}
+
+.qr-sql-input::selection {
+    background: rgba(212, 175, 55, 0.18);
+}
+
+/* ─── Action Bar ────────────────────────────────── */
+
+.qr-action-bar {
+    border-top: 1px solid var(--border);
+    background: var(--ink-2);
+    padding: 1rem 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 1rem;
+    flex-shrink: 0;
+    width: 100%;
+}
+
+.qr-status {
+    font-size: 0.6rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ghost);
+    margin-right: auto;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.qr-status-dot {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: var(--ghost);
+    flex-shrink: 0;
+}
+
+.qr-status-dot.ready {
+    background: var(--moss);
+    animation: blink-dot 2s step-end infinite;
+}
+
+.btn-next {
+    font-family: var(--font);
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--ash);
+    background: transparent;
+    border: 1px solid var(--border);
+    padding: 0.7rem 1.4rem;
+    cursor: pointer;
+    transition: color 0.2s, border-color 0.2s;
+    flex-shrink: 0;
+}
+
+.btn-next:hover {
+    color: var(--gold-dim);
+    border-color: var(--gold-dim);
+}
+
+.btn-run {
+    font-family: var(--font);
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--ink);
+    background: var(--gold);
+    border: 1px solid var(--gold);
+    padding: 0.7rem 1.8rem;
+    cursor: pointer;
+    transition: background 0.2s, border-color 0.2s, transform 0.18s, box-shadow 0.2s;
+    flex-shrink: 0;
+}
+
+.btn-run:hover {
+    background: var(--gold-pale);
+    border-color: var(--gold-pale);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 14px rgba(212, 175, 55, 0.25);
+}
+
+.btn-run:active {
+    transform: translateY(0);
+}
+
+.btn-run:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+/* ─── Output Section (100% width below) ─────────────────────────────── */
+
+.qr-output-section {
+    flex-shrink: 0;
+    width: 100%;
+    border-top: 1px solid var(--border);
+    background: var(--ink);
+}
+
+.qr-results {
+    display: flex;
+    flex-direction: column;
+    max-height: 40vh;
+    min-height: 200px;
+    background: var(--ink);
+    width: 100%;
+}
+
+.qr-results-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.6rem 1.5rem;
+    border-bottom: 1px solid var(--border);
+    background: var(--ink-2);
+    flex-shrink: 0;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.qr-results-tab {
+    font-size: 0.6rem;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--gold);
+    border-bottom: 1px solid var(--gold-dim);
+    padding-bottom: 2px;
+    flex-shrink: 0;
+}
+
+.qr-verdict {
+    font-size: 0.6rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    padding: 0.2rem 0.7rem;
+    border: 1px solid;
+    flex-shrink: 0;
+}
+
+.verdict-correct {
+    color: var(--moss);
+    border-color: var(--moss);
+}
+
+.verdict-wrong {
+    color: var(--ember-dim);
+    border-color: var(--ember-dim);
+}
+
+.qr-row-count {
+    font-size: 0.6rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--ghost);
+    margin-left: auto;
+    flex-shrink: 0;
+}
+
+/* ─── Table ─────────────────────────────────────── */
+
+.qr-table-scroll {
+    overflow: auto;
+    flex: 1;
+    min-height: 0;
+    width: 100%;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) transparent;
+}
+
+.qr-table-scroll::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+}
+
+.qr-table-scroll::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.qr-table-scroll::-webkit-scrollbar-thumb {
+    background: var(--border);
+    border-radius: 2px;
+}
+
+.qr-result-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: var(--font);
+    font-size: 0.72rem;
+    letter-spacing: 0.04em;
+}
+
+.qr-result-table thead tr {
+    background: var(--ink-3);
+    border-bottom: 1px solid var(--border-warm);
+}
+
+.qr-result-table thead {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+}
+
+.qr-result-table th {
+    padding: 0.55rem 1.2rem;
+    text-align: left;
+    color: var(--gold-dim);
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    font-size: 0.62rem;
+    white-space: nowrap;
+    border-right: 1px solid var(--border);
+    background: var(--ink-3);
+}
+
+.qr-result-table th:last-child {
+    border-right: none;
+}
+
+.qr-result-table td {
+    padding: 0.5rem 1.2rem;
+    color: var(--mist);
+    border-bottom: 1px solid var(--border);
+    border-right: 1px solid var(--border);
+    white-space: nowrap;
+}
+
+.qr-result-table td:last-child {
+    border-right: none;
+}
+
+.qr-result-table tbody tr:nth-child(even) {
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.qr-result-table tbody tr:hover {
+    background: rgba(212, 175, 55, 0.05);
+}
+
+.qr-result-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.qr-no-rows {
+    padding: 2rem;
+    text-align: center;
+    font-size: 0.68rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--ghost);
+}
+
+/* ─── Animations ────────────────────────────────── */
+
+@keyframes blink {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: 0.15; }
+}
+
+@keyframes blink-dot {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: 0.3; }
+}
+
+/* ─── Responsive ────────────────────────────────── */
+
+@media (max-width: 820px) {
+    .qr-top-section {
+        flex-direction: column;
+    }
+    
+    .qr-panel-left {
+        border-right: none;
+        border-bottom: 1px solid var(--border);
+        max-height: 45vh;
+    }
+    
+    .qr-panel-right {
+        min-height: 45vh;
+    }
+    
+    .qr-output-section {
+        border-top: 1px solid var(--border);
+    }
+    
+    .qr-breadcrumb {
+        display: none;
+    }
+}
+
+@media (max-width: 480px) {
+    .qr-topbar {
+        padding: 0.8rem 1rem;
+    }
+
+    .qr-panel-body {
+        padding: 1.4rem 1.2rem;
+    }
+
+    .qr-editor-area {
+        padding: 1rem;
+    }
+
+    .qr-action-bar {
+        padding: 0.8rem 1rem;
+        flex-wrap: wrap;
+        gap: 0.6rem;
+    }
+
+    .btn-next,
+    .btn-run {
+        padding: 0.6rem 1rem;
+        font-size: 0.65rem;
+    }
+    
+    .qr-results {
+        max-height: 50vh;
+    }
+}

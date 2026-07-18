@@ -1,0 +1,51 @@
+
+.cases-container {
+    animation: fadeIn 0.3s ease;
+}
+
+.cases-header {
+    margin-bottom: 2rem;
+}
+
+.cases-header h1 {
+    font-size: 2rem;
+    color: #c9a03d;
+    margin-bottom: 0.5rem;
+}
+
+.coming-soon {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 400px;
+    background: linear-gradient(135deg, #1a1f2e, #121520);
+    border-radius: 12px;
+    border: 1px solid #2a2f3e;
+}
+
+.coming-soon-content {
+    text-align: center;
+}
+
+.coming-soon-content .emoji {
+    font-size: 4rem;
+    display: block;
+    margin-bottom: 1rem;
+}
+
+.coming-soon-content h2 {
+    color: #c9a03d;
+    margin-bottom: 0.5rem;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

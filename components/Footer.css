@@ -1,0 +1,186 @@
+@import url('https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&display=swap');
+
+.footer {
+    background: #080706;
+    border-top: 1px solid #2a2720;
+    font-family: 'Courier Prime', monospace;
+    padding: 0 1rem;
+}
+
+/* CONTAINER */
+.footer-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 1.1rem 1rem 0.3rem; /* ↑ more top, ↓ less bottom */
+}
+
+/* GRID (UPPER SECTION) */
+.footer-grid {
+    display: grid;
+    grid-template-columns: 1.8fr 1fr 1fr 1fr;
+    gap: 1rem;
+    padding-bottom: 0.7rem; /* ↑ more breathing space */
+    border-bottom: 1px solid #1e1c18;
+    width: 100%;
+}
+
+/* push edges outward */
+.footer-grid > *:first-child {
+    justify-self: start;
+}
+
+.footer-grid > *:last-child {
+    justify-self: end;
+}
+
+/* BRAND */
+.footer-brand {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.footer-logo {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.footer-logo svg {
+    width: 14px;
+    height: 14px;
+}
+
+.footer-logo-text {
+    font-size: 0.72rem;
+    letter-spacing: 0.18em;
+    color: #c9a03d;
+}
+
+.footer-brand-desc {
+    font-size: 0.72rem;
+    line-height: 1.4;
+    color: #4a453d;
+    max-width: 240px;
+}
+
+/* BADGES */
+.footer-brand-badges {
+    display: flex;
+    gap: 0.3rem;
+    flex-wrap: wrap;
+}
+
+.footer-brand-badges span {
+    font-size: 0.58rem;
+    padding: 0.05rem 0.35rem;
+    border: 1px solid #2a2720;
+    color: #3e3a34;
+}
+
+/* COLUMNS */
+.footer-col {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.footer-col-title {
+    font-size: 0.65rem;
+    letter-spacing: 0.18em;
+    color: #8b6914;
+    margin-bottom: 0.2rem;
+}
+
+.footer-col a {
+    font-size: 0.68rem;
+    letter-spacing: 0.06em;
+    color: #4a453d;
+    text-decoration: none;
+    line-height: 1.25;
+    transition: color 0.18s ease;
+}
+
+.footer-col a:hover {
+    color: #c9a03d;
+}
+
+/* BOTTOM BAR (COMPACT STRIP) */
+.footer-bottom {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 0.25rem; /* ↓ tighter */
+    gap: 0.4rem;
+    flex-wrap: wrap;
+    width: 100%;
+}
+
+/* smaller text */
+.footer-bottom p {
+    font-size: 0.55rem;
+    color: #3a3630;
+    margin: 0;
+}
+
+.footer-bottom span {
+    color: #8b6914;
+}
+
+/* STATUS */
+.footer-status {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: 0.55rem;
+    color: #3a3630;
+}
+
+.dot {
+    width: 4px;
+    height: 4px;
+    background: #3a7a4a;
+    border-radius: 50%;
+    animation: blink 2s infinite;
+}
+
+/* LEGAL */
+.footer-legal {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.footer-legal a {
+    font-size: 0.55rem;
+    color: #3a3630;
+    text-decoration: none;
+    transition: color 0.18s ease;
+}
+
+.footer-legal a:hover {
+    color: #c9a03d;
+}
+
+/* ANIMATION */
+@keyframes blink {
+    50% { opacity: 0.2; }
+}
+
+/* RESPONSIVE */
+@media (max-width: 760px) {
+    .footer-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 0.8rem;
+    }
+}
+
+@media (max-width: 420px) {
+    .footer-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .footer-bottom {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}
