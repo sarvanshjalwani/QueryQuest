@@ -194,20 +194,35 @@
 .qr-panel-header {
     display: flex;
     align-items: center;
-    gap: 10px;
-    padding: 0.7rem 1.5rem;
+    padding: 0.7rem 1.5rem 0;
     border-bottom: 1px solid var(--border);
     background: var(--ink-2);
     flex-shrink: 0;
 }
 
+.qr-panel-tabs {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+}
+
 .qr-panel-tab {
+    font: inherit;
     font-size: 0.62rem;
     letter-spacing: 0.22em;
     text-transform: uppercase;
+    color: var(--ghost);
+    border: 0;
+    border-bottom: 2px solid transparent;
+    padding: 0.2rem 0 0.7rem;
+    background: transparent;
+    cursor: pointer;
+}
+
+.qr-panel-tab:hover,
+.qr-panel-tab.active {
     color: var(--gold);
-    border-bottom: 1px solid var(--gold-dim);
-    padding-bottom: 2px;
+    border-bottom-color: var(--gold-dim);
 }
 
 .qr-panel-body {
@@ -278,6 +293,22 @@
     word-break: break-word;
 }
 
+.qr-schema-block {
+    max-width: 100%;
+    margin: 0;
+    padding: 1rem 1.2rem;
+    overflow: auto;
+    border: 1px solid var(--border);
+    border-left: 2px solid var(--gold-dim);
+    background: var(--ink);
+    color: var(--parchment);
+    font-family: var(--font);
+    font-size: 0.75rem;
+    line-height: 1.8;
+    white-space: pre;
+    tab-size: 2;
+}
+
 /* ─── Right Panel (Editor) ──────────────────────── */
 
 .qr-panel-right {
@@ -325,68 +356,12 @@
     padding: 1.2rem 1.5rem;
     overflow: hidden;
     min-height: 0;
+    width: 100%;
 }
 
-.qr-editor-gutter {
-    display: flex;
-    gap: 1rem;
+.qr-monaco-editor {
     flex: 1;
     min-height: 0;
-    overflow: hidden;
-}
-
-.qr-line-numbers {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    padding-top: 2px;
-    user-select: none;
-    color: var(--ghost);
-    font-size: 0.68rem;
-    letter-spacing: 0.04em;
-    line-height: 1.72rem;
-    min-width: 32px;
-    flex-shrink: 0;
-    overflow: hidden;
-}
-
-.qr-sql-input {
-    flex: 1;
-    background: transparent;
-    border: none;
-    outline: none;
-    resize: none;
-    font-family: var(--font);
-    font-size: 0.82rem;
-    letter-spacing: 0.04em;
-    color: var(--parchment);
-    line-height: 1.72rem;
-    caret-color: var(--gold);
-    width: 100%;
-    overflow-y: auto;
-    scrollbar-width: thin;
-    scrollbar-color: var(--border) transparent;
-}
-
-.qr-sql-input::-webkit-scrollbar {
-    width: 4px;
-}
-
-.qr-sql-input::-webkit-scrollbar-track {
-    background: transparent;
-}
-
-.qr-sql-input::-webkit-scrollbar-thumb {
-    background: var(--border);
-    border-radius: 2px;
-}
-
-.qr-sql-input::placeholder {
-    color: var(--ghost);
-}
-
-.qr-sql-input::selection {
-    background: rgba(212, 175, 55, 0.18);
 }
 
 /* ─── Action Bar ────────────────────────────────── */
@@ -401,6 +376,14 @@
     gap: 1rem;
     flex-shrink: 0;
     width: 100%;
+}
+
+.qr-save-error {
+    padding: 0.65rem 1.5rem;
+    border-top: 1px solid var(--ember-dim);
+    color: #f0a18a;
+    font-size: 0.72rem;
+    line-height: 1.5;
 }
 
 .qr-status {

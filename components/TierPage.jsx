@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import './TierPage.css';
-import QuestionPrev from './QuestionPrev';
 import QuestionRun from './QuestionRun';
+import { useAuth } from '../src/contexts/auth-context';
+import { getSolvedQuestionIds } from '../src/lib/attempts';
 
 const TierPage = ({ 
   tier, 
@@ -12,11 +13,34 @@ const TierPage = ({
 }) => {
   const [clicked, setClicked] = useState(false);
   const [selectedQuestion, setSelectedQuestion] = useState(null);
+  const { user } = useAuth();
+  const [solvedQuestionIds, setSolvedQuestionIds] = useState(() => new Set());
+  const [progressError, setProgressError] = useState("");
 
-  // Filter by tier (now using exact match: "Easy", "Medium", "Hard")
-  const filteredQuestions = questions.filter(
-    q => q.difficulty === tier
-  );
+  useEffect(() => {
+    let active = true;
+    getSolvedQuestionIds(user?.id)
+      .then((ids) => {
+        if (active) {
+          setSolvedQuestionIds((currentIds) => new Set([...currentIds, ...ids]));
+          setProgressError("");
+        }
+      })
+      .catch((error) => {
+        if (active) setProgressError(error.message || "Unable to load solved questions.");
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [user?.id]);
+
+  const filteredQuestions = useMemo(() => questions
+    .filter((question) => question.difficulty === tier)
+    .map((question) => ({
+      ...question,
+      solved: question.solved === 1 || solvedQuestionIds.has(String(question.id)) ? 1 : 0,
+    })), [questions, tier, solvedQuestionIds]);
 
   const handleQuestionClick = (question) => {
     setSelectedQuestion(question);
@@ -26,6 +50,10 @@ const TierPage = ({
   const handleBackToList = () => {
     setSelectedQuestion(null);
     setClicked(false);
+  };
+
+  const handleQuestionSolved = (questionId) => {
+    setSolvedQuestionIds((currentIds) => new Set(currentIds).add(String(questionId)));
   };
 
   // Stats based on solved field (0 = unsolved, 1 = solved)
@@ -65,6 +93,7 @@ const TierPage = ({
         <QuestionRun
           selectedQuestion={selectedQuestion}
           handleBackToList={handleBackToList}
+          onQuestionSolved={handleQuestionSolved}
         />
       ) : (
         <>
@@ -95,6 +124,7 @@ const TierPage = ({
 
           {/* Questions List */}
           <div className="questions-list">
+            {progressError && <p className="no-questions" role="alert">{progressError}</p>}
             {filteredQuestions.length === 0 && (
               <p className="no-questions">No questions found for {tier} tier</p>
             )}

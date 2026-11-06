@@ -1,0 +1,271 @@
+.user-page,
+.user-page * {
+  box-sizing: border-box;
+}
+
+.user-page {
+  width: 100%;
+  min-height: 100vh;
+  padding: 3rem max(1rem, calc((100% - 1040px) / 2)) 5rem;
+  background: linear-gradient(135deg, #2a251c 0%, #1e1b16 50%, #2a251c 100%);
+  color: #f5f0e6;
+  font-family: 'Courier Prime', 'Courier New', monospace;
+}
+
+.user-page-header {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.75rem;
+  margin-bottom: 2rem;
+}
+
+.user-eyebrow {
+  margin: 0;
+  color: #d4af37;
+  font-size: 0.7rem;
+  letter-spacing: 0.22em;
+}
+
+.user-page-header h1 {
+  display: block;
+  margin: 0;
+  color: #f5f0e6;
+  font-size: clamp(2rem, 6vw, 3rem);
+  letter-spacing: 0;
+  line-height: 1.2;
+}
+
+.user-page-header > p:last-child,
+.user-empty {
+  color: #b8b0a0;
+}
+
+.user-page-header > p:last-child {
+  margin: 0;
+  line-height: 1.6;
+}
+
+.user-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.user-stat-card,
+.user-panel {
+  border: 1px solid #4a4438;
+  background: #24211c;
+}
+
+.user-stat-card {
+  display: grid;
+  gap: 0.75rem;
+  padding: 1.25rem;
+}
+
+.user-stat-card span {
+  color: #b8b0a0;
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.user-stat-card strong {
+  color: #e8c84a;
+  font-size: 1.8rem;
+}
+
+.user-panel {
+  margin-bottom: 1.5rem;
+  padding: 1.5rem;
+}
+
+.user-panel h2 {
+  margin-bottom: 1rem;
+  color: #e8c84a;
+  font-family: inherit;
+  font-size: 1rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.difficulty-stat-list,
+.attempt-list {
+  display: grid;
+}
+
+.difficulty-stat-row,
+.attempt-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.85rem 0;
+  border-bottom: 1px solid #3a352c;
+  color: #b8b0a0;
+  font-size: 0.82rem;
+}
+
+.difficulty-stat-row:last-child,
+.attempt-row:last-child {
+  border-bottom: 0;
+}
+
+.attempt-row > div {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.attempt-row strong {
+  color: #f5f0e6;
+  font-weight: 400;
+}
+
+.attempt-row span,
+.user-panel a {
+  color: #d4af37;
+  font-size: 0.75rem;
+}
+
+.attempt-row .attempt-correct {
+  color: #80c98b;
+}
+
+.attempt-row .attempt-incorrect {
+  color: #f0a18a;
+}
+
+.profile-details {
+  text-align: center;
+}
+
+.profile-avatar-large {
+  width: 76px;
+  height: 76px;
+  display: grid;
+  place-items: center;
+  margin: 0 auto 1rem;
+  border: 1px solid #d4af37;
+  border-radius: 50%;
+  color: #e8c84a;
+  font-size: 2rem;
+}
+
+.profile-details h2 {
+  margin: 0.3rem 0;
+  color: #f5f0e6;
+  font-family: inherit;
+  text-transform: none;
+}
+
+.profile-details > p {
+  color: #b8b0a0;
+}
+
+.profile-details dl {
+  max-width: 520px;
+  margin: 2rem auto 0;
+  text-align: left;
+}
+
+.profile-details dl > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.8rem 0;
+  border-bottom: 1px solid #3a352c;
+}
+
+.profile-details dt {
+  color: #b8b0a0;
+}
+
+.profile-details dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.settings-form {
+  display: grid;
+  gap: 1.2rem;
+  max-width: 620px;
+}
+
+.settings-form label {
+  display: grid;
+  gap: 0.5rem;
+  color: #b8b0a0;
+  font-size: 0.78rem;
+}
+
+.settings-form input,
+.settings-form select {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #4a4438;
+  border-radius: 0;
+  background: #1a1814;
+  color: #f5f0e6;
+  font: inherit;
+}
+
+.settings-form button {
+  justify-self: start;
+  padding: 0.75rem 1.25rem;
+  border: 1px solid #d4af37;
+  background: #d4af37;
+  color: #1a1814;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.settings-form button:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
+.user-error,
+.user-success {
+  padding: 0.75rem;
+  border: 1px solid #a04020;
+  color: #f0a18a;
+  font-size: 0.8rem;
+  line-height: 1.6;
+}
+
+.user-success {
+  border-color: #4a9a5a;
+  color: #80c98b;
+}
+
+.account-loading {
+  min-height: 60vh;
+  display: grid;
+  place-items: center;
+  background: #1e1b16;
+  color: #f5f0e6;
+}
+
+@media (max-width: 680px) {
+  .user-stat-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .user-page {
+    padding-top: 2rem;
+  }
+
+  .user-panel {
+    padding: 1rem;
+  }
+}
+
+@media (max-width: 420px) {
+  .attempt-row {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}

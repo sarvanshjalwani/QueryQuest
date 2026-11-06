@@ -1,14 +1,19 @@
-import { useState, useRef } from "react";
+import { useState } from "react";
+import Editor from "@monaco-editor/react";
 import "./QuestionRun.css";
 import questions from "../src/questions";
+import { useAuth } from "../src/contexts/auth-context";
+import { markQuestionSolved, saveAttempt } from "../src/lib/attempts";
 
-export default function QuestionRun({ selectedQuestion, handleBackToList }) {
-    const inp = useRef();
+export default function QuestionRun({ selectedQuestion, handleBackToList, onQuestionSolved }) {
+    const { user, profile } = useAuth();
     const [correct, setCorrect] = useState(null);
     const [selected, setSelected] = useState(selectedQuestion);
     const [query, setQuery] = useState("");
     const [result, setResult] = useState(null);
     const [loading, setLoading] = useState(false);
+    const [saveError, setSaveError] = useState("");
+    const [problemPanel, setProblemPanel] = useState("problem");
 
     function onClick() {
         const nextQuestion = questions.find((q) => q.id === selected.id + 1);
@@ -17,11 +22,10 @@ export default function QuestionRun({ selectedQuestion, handleBackToList }) {
             setQuery("");
             setResult(null);
             setCorrect(null);
+            setSaveError("");
+            setProblemPanel("problem");
         }
     }
-
-    const lineCount = Math.max(query.split("\n").length, 8);
-    const lines = Array.from({ length: lineCount }, (_, i) => i + 1);
 
     const difficultyClass =
         selected.difficulty?.toLowerCase() === "easy"
@@ -32,20 +36,45 @@ export default function QuestionRun({ selectedQuestion, handleBackToList }) {
 
     async function handleSubmit() {
         setLoading(true);
+        setSaveError("");
         try {
             const response = await fetch("http://localhost:5000/req", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     query,
-                    expected: selectedQuestion.expectedAnswer,
+                    expected: selected.expectedAnswer,
+                    databaseSchema: selected.databaseSchema,
+                    testData: selected.testData,
                 }),
             });
             const data = await response.json();
+            if (!response.ok) {
+                throw new Error(data.error || `Request failed with status ${response.status}`);
+            }
             setCorrect(data.correct);
             setResult(data.rows ?? []);
+            if (data.correct) {
+                try {
+                    await markQuestionSolved(user?.id, selected);
+                    onQuestionSolved?.(selected.id);
+                } catch (error) {
+                    setSaveError(`Correct answer, but solved status could not be saved: ${error.message}`);
+                }
+            }
+            if (user) {
+                try {
+                    await saveAttempt({
+                        userId: user.id,
+                        question: selected,
+                        correct: Boolean(data.correct),
+                    });
+                } catch (error) {
+                    setSaveError(`Query ran, but its result could not be saved: ${error.message}`);
+                }
+            }
         } catch (err) {
-            console.error(err);
+            setSaveError(err.message || "Unable to run this query.");
         } finally {
             setLoading(false);
         }
@@ -73,19 +102,54 @@ export default function QuestionRun({ selectedQuestion, handleBackToList }) {
                     {/* LEFT — Problem */}
                     <div className="qr-panel-left">
                         <div className="qr-panel-header">
-                            <span className="qr-panel-tab">Problem</span>
+                            <div className="qr-panel-tabs" role="tablist" aria-label="Question resources">
+                                <button
+                                    className={`qr-panel-tab${problemPanel === "problem" ? " active" : ""}`}
+                                    id="question-tab"
+                                    type="button"
+                                    role="tab"
+                                    aria-selected={problemPanel === "problem"}
+                                    aria-controls="question-panel"
+                                    onClick={() => setProblemPanel("problem")}
+                                >
+                                    Problem
+                                </button>
+                                <button
+                                    className={`qr-panel-tab${problemPanel === "schema" ? " active" : ""}`}
+                                    id="schema-tab"
+                                    type="button"
+                                    role="tab"
+                                    aria-selected={problemPanel === "schema"}
+                                    aria-controls="schema-panel"
+                                    onClick={() => setProblemPanel("schema")}
+                                >
+                                    Schema
+                                </button>
+                            </div>
                         </div>
-                        <div className="qr-panel-body">
-                            <h2 className="qr-problem-title">{selected.title}</h2>
-                            <div className="qr-divider" />
-                            <p className="qr-problem-body">{selected.question}</p>
-                            {selected.testCase && (
-                                <>
-                                    <div className="qr-testcase-label">Expected Output</div>
-                                    <div className="qr-testcase-block">{selected.testCase}</div>
-                                </>
-                            )}
-                        </div>
+                        {problemPanel === "problem" ? (
+                            <div className="qr-panel-body" id="question-panel" role="tabpanel" aria-labelledby="question-tab">
+                                <h2 className="qr-problem-title">{selected.title}</h2>
+                                <div className="qr-divider" />
+                                <p className="qr-problem-body">{selected.question}</p>
+                                {selected.testCase && (
+                                    <>
+                                        <div className="qr-testcase-label">Expected Output</div>
+                                        <div className="qr-testcase-block">{selected.testCase}</div>
+                                    </>
+                                )}
+                            </div>
+                        ) : (
+                            <div className="qr-panel-body" id="schema-panel" role="tabpanel" aria-labelledby="schema-tab">
+                                <h2 className="qr-problem-title">Database Schema</h2>
+                                <div className="qr-divider" />
+                                {selected.databaseSchema?.length ? (
+                                    <pre className="qr-schema-block">{selected.databaseSchema.join("\n\n")}</pre>
+                                ) : (
+                                    <p className="qr-problem-body">No schema is provided for this question.</p>
+                                )}
+                            </div>
+                        )}
                     </div>
 
                     {/* RIGHT — Editor */}
@@ -96,19 +160,26 @@ export default function QuestionRun({ selectedQuestion, handleBackToList }) {
                         </div>
 
                         <div className="qr-editor-area">
-                            <div className="qr-editor-gutter">
-                                <div className="qr-line-numbers">
-                                    {lines.map((n) => <span key={n}>{n}</span>)}
-                                </div>
-                                <textarea
-                                    ref={inp}
-                                    className="qr-sql-input"
-                                    value={query}
-                                    onChange={(e) => setQuery(e.target.value)}
-                                    placeholder="SELECT ..."
-                                    spellCheck={false}
-                                />
-                            </div>
+                            <Editor
+                                className="qr-monaco-editor"
+                                height="100%"
+                                language="sql"
+                                theme={profile?.editor_theme ?? "vs-dark"}
+                                value={query}
+                                onChange={(value) => setQuery(value ?? "")}
+                                options={{
+                                    ariaLabel: "SQL query editor",
+                                    automaticLayout: true,
+                                    fontFamily: "'Courier Prime', 'Courier New', monospace",
+                                    fontSize: profile?.editor_font_size ?? 14,
+                                    lineHeight: 28,
+                                    minimap: { enabled: false },
+                                    padding: { top: 8, bottom: 8 },
+                                    scrollBeyondLastLine: false,
+                                    tabSize: 2,
+                                    wordWrap: "on",
+                                }}
+                            />
                         </div>
 
                         {/* Action bar */}
@@ -122,6 +193,7 @@ export default function QuestionRun({ selectedQuestion, handleBackToList }) {
                                 {loading ? "Running..." : "Run Query"}
                             </button>
                         </div>
+                        {saveError && <p className="qr-save-error" role="alert">{saveError}</p>}
                     </div>
                 </div>
 

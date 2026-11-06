@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import './Nav.css';
 import { useNavigate, useLocation } from "react-router-dom";
+import { useAuth } from '../src/contexts/auth-context';
 
 const IconMagnify = ({ className }) => (
   <svg className={className} viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -83,7 +84,9 @@ const IconChevron = ({ open }) => (
 const Nav = ({ onLogout }) => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { user, profile, signOut } = useAuth();
   const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const [logoutError, setLogoutError] = useState("");
   
   // Determine active tab based on current path
   const getActiveTabFromPath = () => {
@@ -91,26 +94,16 @@ const Nav = ({ onLogout }) => {
     if (path === '/practice') return 'practice';
     if (path === '/cases') return 'cases';
     if (path === '/playground') return 'playground';
+    if (path === '/statistics') return 'statistics';
     return '';
   };
   
-  const [activeTab, setActiveTab] = useState(getActiveTabFromPath());
-  
-  // Update active tab when location changes
-  useEffect(() => {
-    setActiveTab(getActiveTabFromPath());
-  }, [location.pathname]);
+  const activeTab = getActiveTabFromPath();
   
   const tabs = [
     { id: 'practice', label: 'Practice', Icon: IconBook, path: '/practice' },
     { id: 'cases', label: 'Cases', Icon: IconBriefcase, path: '/cases' },
     { id: 'playground', label: 'Playground', Icon: IconChart, path: '/playground' },
-  ];
-  
-  const dropdownItems = [
-    { label: 'My Profile', Icon: IconUser, action: () => console.log('Profile') },
-    { label: 'Statistics', Icon: IconStats, action: () => console.log('Stats') },
-    { label: 'Settings', Icon: IconSettings, action: () => console.log('Settings') },
   ];
   
   const handleTabClick = (path) => {
@@ -121,16 +114,28 @@ const Nav = ({ onLogout }) => {
     navigate('/');
   };
   
-  const handleDropdownAction = (action) => {
-    action();
+  const handleDropdownAction = (path) => {
+    navigate(path);
     setShowProfileMenu(false);
   };
   
-  const handleLogout = () => {
-    if (onLogout) onLogout();
-    navigate('/');
-    setShowProfileMenu(false);
+  const handleLogout = async () => {
+    setLogoutError("");
+    try {
+      await signOut();
+      if (onLogout) onLogout();
+      navigate('/');
+      setShowProfileMenu(false);
+    } catch (error) {
+      setLogoutError(error.message || "Unable to sign out.");
+    }
   };
+
+  const dropdownItems = [
+    { label: 'My Profile', Icon: IconUser, path: '/profile' },
+    { label: 'Statistics', Icon: IconStats, path: '/statistics' },
+    { label: 'Settings', Icon: IconSettings, path: '/settings' },
+  ];
   
   return (
     <nav className="navbar">
@@ -146,7 +151,7 @@ const Nav = ({ onLogout }) => {
               className={`nav-link ${activeTab === id ? 'active' : ''}`}
               onClick={() => handleTabClick(path)}
             >
-              <Icon />
+              {Icon()}
               <span>{label}</span>
             </button>
           </li>
@@ -170,27 +175,38 @@ const Nav = ({ onLogout }) => {
             <div className="profile-avatar">
               <IconUser />
             </div>
-            <span className="profile-name">Guest</span>
+            <span className="profile-name">{profile?.display_name || (user ? user.email : 'Guest')}</span>
             <IconChevron open={showProfileMenu} />
           </button>
 
           {showProfileMenu && (
             <div className="profile-dropdown">
-              {dropdownItems.map(({ label, Icon, action }) => (
+              {!user && (
+                <button className="dropdown-item" onClick={() => handleDropdownAction('/account')}>
+                  <IconUser />
+                  Sign in
+                </button>
+              )}
+              {dropdownItems.map(({ label, Icon, path }) => (
                 <button
                   key={label}
                   className="dropdown-item"
-                  onClick={() => handleDropdownAction(action)}
+                  onClick={() => handleDropdownAction(path)}
                 >
-                  <Icon />
+                  {Icon()}
                   {label}
                 </button>
               ))}
-              <div className="dropdown-divider" />
-              <button className="dropdown-item danger" onClick={handleLogout}>
-                <IconLogout />
-                Logout
-              </button>
+              {user && (
+                <>
+                  <div className="dropdown-divider" />
+                  <button className="dropdown-item danger" onClick={handleLogout}>
+                    <IconLogout />
+                    Logout
+                  </button>
+                </>
+              )}
+              {logoutError && <p className="nav-error" role="alert">{logoutError}</p>}
             </div>
           )}
         </div>

@@ -51,8 +51,51 @@ async function createSandboxDB(sessionId) {
 }
 function isSafeQuery(query) {
     if (!query || typeof query !== 'string') return false;
-    const q = query.trim().toUpperCase();
-    return q.startsWith("SELECT");
+    const trimmedQuery = query.trim();
+    if (!/^(SELECT|WITH)\b/i.test(trimmedQuery)) return false;
+    if (trimmedQuery.replace(/;\s*$/, "").includes(";")) return false;
+    return !/\b(INSERT|UPDATE|DELETE|REPLACE|CREATE|DROP|ALTER|ATTACH|DETACH|PRAGMA|VACUUM|REINDEX|ANALYZE)\b/i.test(trimmedQuery);
+}
+function isValidSetupStatements(statements, statementType) {
+    return Array.isArray(statements)
+        && statements.length > 0
+        && statements.length <= 20
+        && statements.every((statement) =>
+            typeof statement === "string"
+            && statement.length <= 50000
+            && new RegExp(`^\\s*${statementType}\\b`, "i").test(statement)
+        );
+}
+function runStatement(db, statement) {
+    return new Promise((resolve, reject) => {
+        db.run(statement, (err) => {
+            if (err) reject(err);
+            else resolve();
+        });
+    });
+}
+async function createQuestionDB(databaseSchema, testData) {
+    const db = new sqlite3.Database(":memory:");
+    try {
+        for (const statement of databaseSchema) {
+            await runStatement(db, statement);
+        }
+        for (const statement of testData) {
+            await runStatement(db, statement);
+        }
+        return db;
+    } catch (err) {
+        await new Promise((resolve) => db.close(resolve));
+        throw err;
+    }
+}
+function runQuery(db, query) {
+    return new Promise((resolve, reject) => {
+        db.all(query, [], (err, rows) => {
+            if (err) reject(err);
+            else resolve(rows);
+        });
+    });
 }
 function normalizeRows(rows) {
     return rows
@@ -68,7 +111,7 @@ function resultsEqual(actual, expectedRows) {
 }
 
 app.post("/req", async (req, res) => {
-    const { query, expected } = req.body;
+    const { query, expected, databaseSchema, testData } = req.body;
     console.log("=".repeat(50));
     console.log(`Session ID: ${req.session.id}`);
     console.log("Query:", query);
@@ -78,54 +121,56 @@ app.post("/req", async (req, res) => {
     if (!isSafeQuery(query)) {
         console.log("Error: Unsafe query rejected -", query);
         return res.status(403).json({
-            error: "Only SELECT queries are allowed. Your query: " + query
+            error: "Only read-only SELECT queries are allowed."
         });
     }
     if (expected && !isSafeQuery(expected)) {
         console.log("Error: Unsafe expected query rejected -", expected);
         return res.status(403).json({
-            error: "Only SELECT queries are allowed for expected answer queries."
+            error: "Only read-only SELECT queries are allowed for expected answers."
         });
     }
-    try {
-        let db = sessionDBs.get(req.session.id);
+    const includesQuestionSetup = databaseSchema !== undefined || testData !== undefined;
+    if (includesQuestionSetup
+        && (!isValidSetupStatements(databaseSchema, "CREATE\\s+TABLE")
+            || !isValidSetupStatements(testData, "INSERT\\s+INTO"))) {
+        return res.status(400).json({
+            error: "Question database schema and test data must contain valid CREATE TABLE and INSERT INTO statements."
+        });
+    }
 
-        if (!db) {
-            console.log(`📦 No database found for session ${req.session.id}, creating new one...`);
-            db = await createSandboxDB(req.session.id);
-            sessionDBs.set(req.session.id, db);
-            console.log(`✅ Database stored for session ${req.session.id}`);
+    let questionDb = null;
+    try {
+        let db;
+        if (includesQuestionSetup) {
+            questionDb = await createQuestionDB(databaseSchema, testData);
+            db = questionDb;
         } else {
-            console.log(`♻️ Reusing existing database for session ${req.session.id}`);
+            db = sessionDBs.get(req.session.id);
+            if (!db) {
+                console.log(`📦 No database found for session ${req.session.id}, creating new one...`);
+                db = await createSandboxDB(req.session.id);
+                sessionDBs.set(req.session.id, db);
+                console.log(`✅ Database stored for session ${req.session.id}`);
+            } else {
+                console.log(`♻️ Reusing existing database for session ${req.session.id}`);
+            }
         }
+
         let safeQuery = query;
-        if (!query.toUpperCase().includes("LIMIT")) {
-            safeQuery = query + " LIMIT 100";
+        if (!/\bLIMIT\b/i.test(query)) {
+            safeQuery = `${query.trim().replace(/;\s*$/, "")} LIMIT 100`;
         }
+
         let expectedRows = null;
         if (expected) {
             console.log("Executing expected answer query:", expected);
-            expectedRows = await new Promise((resolve, reject) => {
-                db.all(expected, [], (err, rows) => {
-                    if (err) {
-                        reject(err);
-                    } else {
-                        resolve(rows);
-                    }
-                });
-            });
+            expectedRows = await runQuery(db, expected);
             console.log(`Expected answer returned ${expectedRows.length} rows`);
         }
+
         console.log("Executing query:", safeQuery);
-        const rows = await new Promise((resolve, reject) => {
-            db.all(safeQuery, [], (err, rows) => {
-                if (err) {
-                    reject(err);
-                } else {
-                    resolve(rows);
-                }
-            });
-        });
+        const rows = await runQuery(db, safeQuery);
         const isCorrect = expectedRows ? resultsEqual(rows, expectedRows) : null;
         if (expectedRows) {
             if (isCorrect) {
@@ -134,17 +179,20 @@ app.post("/req", async (req, res) => {
                 console.log(`⚠️ Query successful but output does not match expected answer. Returned ${rows.length} rows`);
             }
         } else {
-            console.log(`✅ Query successful! Returning ${rows ? rows.length : 0} rows`);
+            console.log(`✅ Query successful! Returning ${rows.length} rows`);
         }
 
         res.json({ rows: rows || [], correct: isCorrect });
-
     } catch (err) {
         console.error("❌ Error:", err);
         res.status(400).json({ error: err.message });
+    } finally {
+        if (questionDb) {
+            await new Promise((resolve) => questionDb.close(resolve));
+        }
     }
 });
-const PORT = 5000;
+const PORT = Number(process.env.PORT) || 5000;
 app.listen(PORT, () => {
     console.log(`🚀 SQLite sandbox server running on http://localhost:${PORT}`);
     console.log(`📝 Test query: SELECT * FROM users;`);
