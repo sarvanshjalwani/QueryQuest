@@ -2,17 +2,77 @@ const express = require("express");
 const sqlite3 = require("sqlite3").verbose();
 const cors = require("cors");
 const session = require("express-session");
+const crypto = require("crypto");
 const schema = require("./schema");
+const {
+    assertReadOnlySelect,
+    buildPlaygroundDatabase,
+    closeDatabase,
+    runPlaygroundQuery,
+} = require("./playgroundSandbox");
 const app = express();
-app.use(cors());
-app.use(express.json());
+const allowedOrigins = (process.env.FRONTEND_ORIGINS || "http://localhost:5173,http://127.0.0.1:5173")
+    .split(",")
+    .map((origin) => origin.trim())
+    .filter(Boolean);
+const sessionSecret = process.env.SESSION_SECRET
+    || (process.env.NODE_ENV === "production" ? null : crypto.randomBytes(32).toString("hex"));
+if (!sessionSecret) {
+    throw new Error("SESSION_SECRET must be configured outside development.");
+}
+app.use(cors({
+    origin(origin, callback) {
+        if (!origin || allowedOrigins.includes(origin)) {
+            callback(null, true);
+        } else {
+            callback(new Error("Origin is not allowed by CORS."));
+        }
+    },
+    credentials: true,
+}));
+app.use(express.json({ limit: "256kb" }));
 app.use(session({
-    secret: 'sql-sandbox-secret-key',
+    secret: sessionSecret,
     resave: false,
     saveUninitialized: true,
-    cookie: { maxAge: 24 * 60 * 60 * 1000 }
+    cookie: {
+        httpOnly: true,
+        sameSite: "lax",
+        secure: process.env.NODE_ENV === "production",
+        maxAge: 24 * 60 * 60 * 1000,
+    }
 }));
 const sessionDBs = new Map();
+const playgroundDBs = new Map();
+const PLAYGROUND_SESSION_TTL_MS = 30 * 60 * 1000;
+const MAX_PLAYGROUND_SESSIONS = 100;
+
+async function closePlaygroundEntry(sessionId) {
+    const entry = playgroundDBs.get(sessionId);
+    if (!entry) return;
+    playgroundDBs.delete(sessionId);
+    entry.db.interrupt();
+    await closeDatabase(entry.db);
+}
+
+async function prunePlaygroundDatabases() {
+    const expirationTime = Date.now() - PLAYGROUND_SESSION_TTL_MS;
+    const expiredIds = [...playgroundDBs.entries()]
+        .filter(([, entry]) => entry.lastUsedAt < expirationTime)
+        .map(([sessionId]) => sessionId);
+
+    await Promise.all(expiredIds.map((sessionId) => closePlaygroundEntry(sessionId)));
+}
+
+async function makeRoomForPlaygroundDatabase(sessionId) {
+    await prunePlaygroundDatabases();
+    if (playgroundDBs.has(sessionId) || playgroundDBs.size < MAX_PLAYGROUND_SESSIONS) return;
+
+    const oldestSessionId = [...playgroundDBs.entries()]
+        .sort(([, first], [, second]) => first.lastUsedAt - second.lastUsedAt)[0][0];
+    await closePlaygroundEntry(oldestSessionId);
+}
+
 app.get("/check-session", (req, res) => {
     res.json(req.session);
 });
@@ -36,12 +96,18 @@ async function createSandboxDB(sessionId) {
                         if (lastError) {
                             reject(lastError);
                         } else {
-                            db.get("SELECT COUNT(*) as count FROM users", (err, row) => {
-                                if (!err && row) {
-                                    console.log(`[Session ${sessionId}] Verification: ${row.count} users in database`);
+                            db.run("PRAGMA query_only = ON", (queryOnlyError) => {
+                                if (queryOnlyError) {
+                                    reject(queryOnlyError);
+                                    return;
                                 }
+                                db.get("SELECT COUNT(*) as count FROM users", (err, row) => {
+                                    if (!err && row) {
+                                        console.log(`[Session ${sessionId}] Verification: ${row.count} users in database`);
+                                    }
+                                });
+                                resolve(db);
                             });
-                            resolve(db);
                         }
                     }
                 });
@@ -50,11 +116,12 @@ async function createSandboxDB(sessionId) {
     });
 }
 function isSafeQuery(query) {
-    if (!query || typeof query !== 'string') return false;
-    const trimmedQuery = query.trim();
-    if (!/^(SELECT|WITH)\b/i.test(trimmedQuery)) return false;
-    if (trimmedQuery.replace(/;\s*$/, "").includes(";")) return false;
-    return !/\b(INSERT|UPDATE|DELETE|REPLACE|CREATE|DROP|ALTER|ATTACH|DETACH|PRAGMA|VACUUM|REINDEX|ANALYZE)\b/i.test(trimmedQuery);
+    try {
+        assertReadOnlySelect(query);
+        return true;
+    } catch {
+        return false;
+    }
 }
 function isValidSetupStatements(statements, statementType) {
     return Array.isArray(statements)
@@ -83,19 +150,12 @@ async function createQuestionDB(databaseSchema, testData) {
         for (const statement of testData) {
             await runStatement(db, statement);
         }
+        await runStatement(db, "PRAGMA query_only = ON");
         return db;
     } catch (err) {
         await new Promise((resolve) => db.close(resolve));
         throw err;
     }
-}
-function runQuery(db, query) {
-    return new Promise((resolve, reject) => {
-        db.all(query, [], (err, rows) => {
-            if (err) reject(err);
-            else resolve(rows);
-        });
-    });
 }
 function normalizeRows(rows) {
     return rows
@@ -109,6 +169,53 @@ function resultsEqual(actual, expectedRows) {
     const expectedNorm = normalizeRows(expectedRows);
     return actualNorm.every((value, index) => value === expectedNorm[index]);
 }
+
+app.post("/playground/setup", async (req, res) => {
+    let candidateDatabase = null;
+    try {
+        const { schemaSql, dataSql = "" } = req.body;
+        const { db, tables, insertedRows } = await buildPlaygroundDatabase(schemaSql, dataSql);
+        candidateDatabase = db;
+
+        await makeRoomForPlaygroundDatabase(req.sessionID);
+        const previousEntry = playgroundDBs.get(req.sessionID);
+        playgroundDBs.set(req.sessionID, { db, lastUsedAt: Date.now() });
+        candidateDatabase = null;
+        if (previousEntry) {
+            previousEntry.db.interrupt();
+            await closeDatabase(previousEntry.db);
+        }
+
+        res.json({ ready: true, tables, insertedRows });
+    } catch (error) {
+        if (candidateDatabase) await closeDatabase(candidateDatabase);
+        res.status(400).json({ error: error.message || "Unable to build the playground database." });
+    }
+});
+
+app.post("/playground/query", async (req, res) => {
+    try {
+        await prunePlaygroundDatabases();
+        const entry = playgroundDBs.get(req.sessionID);
+        if (!entry) {
+            return res.status(409).json({ error: "Build your sandbox before running a query." });
+        }
+        entry.lastUsedAt = Date.now();
+        const rows = await runPlaygroundQuery(entry.db, req.body.query);
+        res.json({ rows });
+    } catch (error) {
+        res.status(400).json({ error: error.message || "Unable to run this query." });
+    }
+});
+
+app.post("/playground/reset", async (req, res) => {
+    try {
+        await closePlaygroundEntry(req.sessionID);
+        res.json({ reset: true });
+    } catch (error) {
+        res.status(500).json({ error: error.message || "Unable to reset the playground database." });
+    }
+});
 
 app.post("/req", async (req, res) => {
     const { query, expected, databaseSchema, testData } = req.body;
@@ -157,20 +264,15 @@ app.post("/req", async (req, res) => {
             }
         }
 
-        let safeQuery = query;
-        if (!/\bLIMIT\b/i.test(query)) {
-            safeQuery = `${query.trim().replace(/;\s*$/, "")} LIMIT 100`;
-        }
-
         let expectedRows = null;
         if (expected) {
             console.log("Executing expected answer query:", expected);
-            expectedRows = await runQuery(db, expected);
+            expectedRows = await runPlaygroundQuery(db, expected);
             console.log(`Expected answer returned ${expectedRows.length} rows`);
         }
 
-        console.log("Executing query:", safeQuery);
-        const rows = await runQuery(db, safeQuery);
+        console.log("Executing query:", query);
+        const rows = await runPlaygroundQuery(db, query);
         const isCorrect = expectedRows ? resultsEqual(rows, expectedRows) : null;
         if (expectedRows) {
             if (isCorrect) {

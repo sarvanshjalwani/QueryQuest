@@ -1,39 +1,19 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import './TierPage.css';
 import QuestionRun from './QuestionRun';
-import { useAuth } from '../src/contexts/auth-context';
-import { getSolvedQuestionIds } from '../src/lib/attempts';
 
 const TierPage = ({ 
   tier, 
   onBack, 
   questions,
   title,
-  showStats = true
+  showStats = true,
+  solvedQuestionIds,
+  progressError,
+  onQuestionSolved,
 }) => {
   const [clicked, setClicked] = useState(false);
   const [selectedQuestion, setSelectedQuestion] = useState(null);
-  const { user } = useAuth();
-  const [solvedQuestionIds, setSolvedQuestionIds] = useState(() => new Set());
-  const [progressError, setProgressError] = useState("");
-
-  useEffect(() => {
-    let active = true;
-    getSolvedQuestionIds(user?.id)
-      .then((ids) => {
-        if (active) {
-          setSolvedQuestionIds((currentIds) => new Set([...currentIds, ...ids]));
-          setProgressError("");
-        }
-      })
-      .catch((error) => {
-        if (active) setProgressError(error.message || "Unable to load solved questions.");
-      });
-
-    return () => {
-      active = false;
-    };
-  }, [user?.id]);
 
   const filteredQuestions = useMemo(() => questions
     .filter((question) => question.difficulty === tier)
@@ -50,10 +30,6 @@ const TierPage = ({
   const handleBackToList = () => {
     setSelectedQuestion(null);
     setClicked(false);
-  };
-
-  const handleQuestionSolved = (questionId) => {
-    setSolvedQuestionIds((currentIds) => new Set(currentIds).add(String(questionId)));
   };
 
   // Stats based on solved field (0 = unsolved, 1 = solved)
@@ -92,8 +68,9 @@ const TierPage = ({
       {clicked && selectedQuestion ? (
         <QuestionRun
           selectedQuestion={selectedQuestion}
+          questions={filteredQuestions}
           handleBackToList={handleBackToList}
-          onQuestionSolved={handleQuestionSolved}
+          onQuestionSolved={onQuestionSolved}
         />
       ) : (
         <>

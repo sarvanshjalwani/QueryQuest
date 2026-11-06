@@ -2,10 +2,14 @@ import React, { useState } from 'react';
 import './Practice.css';
 import Difficulty from './Difficulty';
 import TierPage from './TierPage';
-import caseQuestions from '../src/questions.js'; // Import case questions
+import caseQuestions from '../src/caseQuestions.js';
+import { useAuth } from '../src/contexts/auth-context';
+import { useQuestionProgress } from '../src/lib/useQuestionProgress';
 
 const Cases = () => {
     const [selectedTier, setSelectedTier] = useState(null);
+    const { user } = useAuth();
+    const { solvedQuestionIds, progressError, markQuestionSolved } = useQuestionProgress(user?.id);
 
     const onSelected = (tier) => {
         console.log('Selected:', tier);
@@ -21,9 +25,7 @@ const Cases = () => {
         const filteredQuestions = caseQuestions.filter(
             q => q.difficulty === difficulty
         );
-        const solvedCount = filteredQuestions.filter(q => q.solved === 1).length;
-        const totalCount = filteredQuestions.length;
-        return totalCount === 0 ? 0 : Math.round((solvedCount / totalCount) * 100);
+        return filteredQuestions.filter(q => solvedQuestionIds.has(String(q.id))).length;
     };
 
     // Get question count for each difficulty
@@ -38,6 +40,9 @@ const Cases = () => {
                 onBack={handleBack} 
                 questions={caseQuestions}
                 title="Cases Mode"
+                solvedQuestionIds={solvedQuestionIds}
+                progressError={progressError}
+                onQuestionSolved={markQuestionSolved}
             />
         );
     }
@@ -55,6 +60,7 @@ const Cases = () => {
                     <p className="diff-subtitle">How deep do you want to go, detective?</p>
                 </div>
 
+                {progressError && <p className="no-questions" role="alert">{progressError}</p>}
                 <div className="diff-grid">
                     <Difficulty 
                         diff="Easy" 

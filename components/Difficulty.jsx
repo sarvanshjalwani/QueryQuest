@@ -66,10 +66,10 @@ export default function Difficulty({ diff, ques, progress, onSelected, cta }) {
     const cfg = CARD_CONFIG[diff];
     
     /* Calculate progress percentage */
-    const calc = (progress / ques) * 100;
-    const pctRaw = Number(calc);
-    const pct = Math.min(Math.max(Math.round(pctRaw), 0), 100);
-    const solved = Math.round((pct / 100) * Number(ques));
+    const total = Number(ques);
+    const completed = Number(progress);
+    const pct = total > 0 ? Math.min(Math.max(Math.round((completed / total) * 100), 0), 100) : 0;
+    const solved = Math.min(Math.max(completed, 0), total);
 
     const handleClick = () => {
         if (onSelected) {

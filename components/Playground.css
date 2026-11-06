@@ -1,39 +1,245 @@
-/* components/Playground.css */
 .playground-container {
+    --playground-gold: #d4af37;
+    --playground-ink: #1a1814;
+    --playground-panel: #24211c;
+    --playground-border: #4a4438;
+    --playground-text: #f5f0e6;
+    --playground-muted: #a9a08e;
+    box-sizing: border-box;
+    width: 100%;
+    min-height: 100vh;
+    padding: 3rem max(1rem, calc((100% - 1200px) / 2)) 5rem;
+    background: linear-gradient(135deg, #1e1b16 0%, var(--playground-ink) 55%, #24211c 100%);
+    color: var(--playground-text);
+    text-align: left;
     animation: fadeIn 0.3s ease;
 }
+
 .playground-header {
+    max-width: 760px;
     margin-bottom: 2rem;
 }
+
+.playground-eyebrow,
+.playground-step,
+.playground-readonly {
+    color: var(--playground-gold);
+    font-size: 0.7rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+}
+
 .playground-header h1 {
-    font-size: 2rem;
-    color: #c9a03d;
-    margin-bottom: 0.5rem;
+    margin: 0.4rem 0 0.85rem;
+    color: var(--playground-gold);
+    font-size: clamp(2.5rem, 6vw, 4rem);
+    line-height: 1.05;
+    letter-spacing: -0.045em;
+    text-wrap: balance;
 }
 
-.coming-soon {
+.playground-intro {
+    max-width: 58ch;
+    margin: 0;
+    color: var(--playground-muted);
+    font-size: clamp(1rem, 1.5vw, 1.12rem);
+    line-height: 1.75;
+    text-wrap: pretty;
+}
+
+.playground-setup,
+.playground-query,
+.playground-results {
+    margin-top: 1.5rem;
+    padding: clamp(1rem, 3vw, 1.5rem);
+    background: var(--playground-panel);
+    border: 1px solid var(--playground-border);
+    border-radius: 10px;
+}
+
+.playground-section-heading,
+.playground-setup-actions,
+.playground-query-actions {
     display: flex;
-    justify-content: center;
     align-items: center;
-    min-height: 400px;
-    background: linear-gradient(135deg, #1a1f2e, #121520);
-    border-radius: 12px;
-    border: 1px solid #2a2f3e;
+    justify-content: space-between;
+    gap: 1rem;
 }
 
-.coming-soon-content {
-    text-align: center;
-}
-
-.coming-soon-content .emoji {
-    font-size: 4rem;
-    display: block;
+.playground-section-heading {
     margin-bottom: 1rem;
 }
 
-.coming-soon-content h2 {
-    color: #c9a03d;
-    margin-bottom: 0.5rem;
+.playground-section-heading h2 {
+    margin: 0.35rem 0 0;
+    color: var(--playground-text);
+    font-size: 1.35rem;
+}
+
+.playground-ready {
+    color: #83d99a;
+    font-size: 0.85rem;
+}
+
+.playground-ready.is-dirty {
+    color: var(--playground-gold);
+}
+
+.playground-editor-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+}
+
+.playground-editor-card {
+    display: block;
+    min-width: 0;
+}
+
+.playground-editor-title {
+    display: flex;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin-bottom: 0.55rem;
+    color: var(--playground-text);
+    font-weight: 600;
+}
+
+.playground-editor-title small {
+    color: var(--playground-muted);
+    font-size: 0.65rem;
+    font-weight: 400;
+    letter-spacing: 0.1em;
+}
+
+.playground-editor {
+    overflow: hidden;
+    border: 1px solid var(--playground-border);
+    border-radius: 6px;
+}
+
+.playground-setup-actions,
+.playground-query-actions {
+    margin-top: 1rem;
+}
+
+.playground-setup-actions p,
+.playground-query-actions p {
+    color: var(--playground-muted);
+    font-size: 0.85rem;
+    line-height: 1.5;
+}
+
+.playground-setup-actions > div {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 0.65rem;
+}
+
+.playground-button {
+    min-height: 42px;
+    padding: 0.65rem 1rem;
+    border: 1px solid transparent;
+    border-radius: 5px;
+    font: inherit;
+    font-weight: 600;
+    cursor: pointer;
+    transition: filter 0.2s ease, opacity 0.2s ease;
+}
+
+.playground-button:hover:not(:disabled) {
+    filter: brightness(1.15);
+}
+
+.playground-button:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+}
+
+.playground-button.primary {
+    background: var(--playground-gold);
+    color: var(--playground-ink);
+}
+
+.playground-button.secondary {
+    border-color: var(--playground-border);
+    background: transparent;
+    color: var(--playground-text);
+}
+
+.playground-table-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 1rem;
+}
+
+.playground-table-list span {
+    padding: 0.35rem 0.65rem;
+    border: 1px solid var(--playground-border);
+    border-radius: 999px;
+    color: var(--playground-muted);
+    font-size: 0.78rem;
+}
+
+.playground-query {
+    margin-top: 1.5rem;
+}
+
+.query-editor {
+    margin-top: 0.5rem;
+}
+
+.playground-message {
+    margin-top: 1rem;
+    padding: 0.85rem 1rem;
+    border: 1px solid #356c43;
+    border-radius: 6px;
+    background: #193020;
+    color: #a9e3b4;
+    line-height: 1.5;
+}
+
+.playground-message.error {
+    border-color: #7e3939;
+    background: #351c1c;
+    color: #f2b0a7;
+}
+
+.playground-results-scroll {
+    overflow-x: auto;
+}
+
+.playground-results-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+}
+
+.playground-results-table th,
+.playground-results-table td {
+    padding: 0.7rem 0.85rem;
+    border-bottom: 1px solid var(--playground-border);
+    white-space: nowrap;
+}
+
+.playground-results-table th {
+    color: var(--playground-gold);
+    font-size: 0.75rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.playground-results-table td {
+    color: var(--playground-text);
+    font-family: 'Courier New', monospace;
+    font-size: 0.85rem;
+}
+
+.playground-empty-results {
+    padding: 1rem 0;
+    color: var(--playground-muted);
 }
 
 @keyframes fadeIn {
@@ -45,5 +251,30 @@
     to {
         opacity: 1;
         transform: translateY(0);
+    }
+}
+
+@media (max-width: 760px) {
+    .playground-editor-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .playground-section-heading,
+    .playground-setup-actions,
+    .playground-query-actions {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .playground-setup-actions > div {
+        width: 100%;
+    }
+
+    .playground-setup-actions .playground-button {
+        flex: 1;
+    }
+
+    .playground-query-actions .playground-button {
+        width: 100%;
     }
 }

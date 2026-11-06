@@ -1,11 +1,10 @@
 import { useState } from "react";
 import Editor from "@monaco-editor/react";
 import "./QuestionRun.css";
-import questions from "../src/questions";
 import { useAuth } from "../src/contexts/auth-context";
 import { markQuestionSolved, saveAttempt } from "../src/lib/attempts";
 
-export default function QuestionRun({ selectedQuestion, handleBackToList, onQuestionSolved }) {
+export default function QuestionRun({ selectedQuestion, questions, handleBackToList, onQuestionSolved }) {
     const { user, profile } = useAuth();
     const [correct, setCorrect] = useState(null);
     const [selected, setSelected] = useState(selectedQuestion);
@@ -16,7 +15,10 @@ export default function QuestionRun({ selectedQuestion, handleBackToList, onQues
     const [problemPanel, setProblemPanel] = useState("problem");
 
     function onClick() {
-        const nextQuestion = questions.find((q) => q.id === selected.id + 1);
+        const selectedIndex = questions.findIndex((question) => question.id === selected.id);
+        if (selectedIndex < 0) return;
+
+        const nextQuestion = questions[selectedIndex + 1];
         if (nextQuestion) {
             setSelected(nextQuestion);
             setQuery("");

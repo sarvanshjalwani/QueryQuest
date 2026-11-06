@@ -3,9 +3,13 @@ import './Practice.css';
 import Difficulty from './Difficulty';
 import TierPage from './TierPage';
 import questions from '../src/questions.js';
+import { useAuth } from '../src/contexts/auth-context';
+import { useQuestionProgress } from '../src/lib/useQuestionProgress';
 
 const Practice = () => {
     const [selectedTier, setSelectedTier] = useState(null);
+    const { user } = useAuth();
+    const { solvedQuestionIds, progressError, markQuestionSolved } = useQuestionProgress(user?.id);
 
     const onSelected = (tier) => {
         console.log('Selected:', tier);
@@ -21,9 +25,7 @@ const Practice = () => {
         const filteredQuestions = questions.filter(
             q => q.difficulty === difficulty
         );
-        const solvedCount = filteredQuestions.filter(q => q.solved === 1).length;
-        const totalCount = filteredQuestions.length;
-        return totalCount === 0 ? 0 : Math.round((solvedCount / totalCount) * 100);
+        return filteredQuestions.filter(q => solvedQuestionIds.has(String(q.id))).length;
     };
 
     // Get question count for each difficulty
@@ -38,6 +40,9 @@ const Practice = () => {
                 onBack={handleBack} 
                 questions={questions}
                 title="Practice Mode"
+                solvedQuestionIds={solvedQuestionIds}
+                progressError={progressError}
+                onQuestionSolved={markQuestionSolved}
             />
         );
     }
@@ -79,6 +84,7 @@ const Practice = () => {
                     />
                 </div>
 
+                {progressError && <p className="no-questions" role="alert">{progressError}</p>}
                 <div className="diff-footer">
                     <div className="diff-footer-dot" />
                     <span>Click a tier to begin your case</span>
